@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Speedtrainer</title>
+<style>
+    body {
+        background: #111;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+    #container {
+        margin-top: 80px;
+        display: none;
+    }
+    #task {
+        font-size: 80px;
+        margin-bottom: 40px;
+    }
+    #inputField {
+        font-size: 40px;
+        width: 120px;
+        text-align: center;
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        color: transparent;
+        text-shadow: 0 0 0 #fff;
+    }
+    #timer {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 30px;
+        color: #0f0;
+    }
+    #resultScreen {
+        display: none;
+        margin-top: 40px;
+        font-size: 22px;
+    }
+    #history {
+        margin-top: 20px;
+        text-align: left;
+        width: 60%;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 20px;
+        white-space: pre-wrap;
+    }
+    button {
+        margin-top: 20px;
+        padding: 15px 30px;
+        font-size: 22px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+    }
+
+    #impressumLink {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        color: #888;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    #impressumBox {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #222;
+        padding: 20px;
+        border-top: 2px solid #555;
+        text-align: left;
+        font-size: 18px;
+    }
+
+    /* Intro Overlay */
+    #introOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.85);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    #introBox {
+        background: #222;
+        padding: 30px;
+        border-radius: 15px;
+        width: 60%;
+        max-width: 650px;
+        text-align: center;
+        font-size: 22px;
+        line-height: 1.5;
+    }
+    .rechnung {
+        font-size: 32px;
+        margin: 10px 0;
+        color: #0af;
+        font-weight: bold;
+    }
+    .highlight {
+        color: #ff0;
+        font-weight: bold;
+    }
+
+    /* Balkendiagramm */
+    #chart {
+        width: 80%;
+        height: 300px;
+        margin: 40px auto;
+        display: flex;
+        align-items: flex-end;
+        gap: 4px;
+        border-left: 2px solid #888;
+        border-bottom: 2px solid #888;
+        padding: 10px;
+    }
+    .bar {
+        width: 20px;
+        background: #0f0;
+    }
+    .bar.wrong {
+        background: #f00;
+    }
+</style>
+</head>
+<body oncontextmenu="return false">
+
+<!-- INTRO / ANLEITUNG -->
+<div id="introOverlay">
+    <div id="introBox">
+        <h1>Anleitung</h1>
+
+        <p>Bei jeder Aufgabe musst du dir den <strong>zweiten Summanden merken</strong>.<br>
+        Er wird in der nächsten Aufgabe der neue erste Summand.</p>
+
+        <div class="rechnung">1) <strong>7 + <span class="highlight">8</span></strong> = ?</div>
+        <p>Ergebnis = 15 → du gibst <strong>5</strong> ein.</p>
+
+        <div class="rechnung">2) <strong><span class="highlight">8</span> + 6</strong> = ?</div>
+        <p>Die gemerkte <span class="highlight">8</span> ist jetzt der neue erste Summand.<br>
+        Ergebnis = 14 → du gibst <strong>4</strong> ein.</p>
+
+        <p>Die Zeit läuft 20 Minuten. ESC bricht ab.</p>
+
+        <button id="startButton">Start</button>
+    </div>
+</div>
+
+<div id="timer">20:00</div>
+
+<div id="container">
+    <div id="task">Bereit?</div>
+    <input id="inputField" maxlength="1" autofocus>
+
+    <br><br>
+    <button id="escButton">ESC</button>
+</div>
+
+<div id="resultScreen">
+    <h1>Ergebnis</h1>
+    <div id="summary"></div>
+
+    <h2>Reaktionszeiten</h2>
+    <div id="chart"></div>
+
+    <h2>Alle Aufgaben:</h2>
+    <div id="history"></div>
+
+    <button onclick="location.reload()">Neustart</button>
+</div>
+
+<div id="impressumLink">Impressum</div>
+<div id="impressumBox">
+    <strong>Impressum</strong><br><br>
+    Verantwortlich: <strong>Johannes D. (PI KO)</strong><br>
+    Diese Seite dient ausschließlich zu Trainingszwecken.<br><br>
+    <button onclick="document.getElementById('impressumBox').style.display='none'">Schließen</button>
+</div>
+
+<script>
+let a = Math.floor(Math.random() * 10);
+let b = Math.floor(Math.random() * 10);
+let firstRound = true;
+
+let correct = 0;
+let wrong = 0;
+let history = [];
+let reactionTimes = [];
+
+let taskStartTime = 0;
+
+let totalSeconds = 20 * 60;
+let running = false;
+
+const taskEl = document.getElementById("task");
+const inputEl = document.getElementById("inputField");
+const timerEl = document.getElementById("timer");
+const resultScreen = document.getElementById("resultScreen");
+const summaryEl = document.getElementById("summary");
+const historyEl = document.getElementById("history");
+const chartEl = document.getElementById("chart");
+const escButton = document.getElementById("escButton");
+
+function updateTask() {
+    if (firstRound) {
+        taskEl.textContent = `${a} + ${b}`;
+    } else {
+        taskEl.textContent = `+ ${b}`;
+    }
+    taskStartTime = performance.now();
+}
+
+function endGame(reason) {
+    running = false;
+    document.getElementById("container").style.display = "none";
+    resultScreen.style.display = "block";
+
+    summaryEl.innerHTML = `
+        ${reason}<br><br>
+        Richtig: ${correct}<br>
+        Falsch: ${wrong}<br>
+    `;
+
+    let text = "";
+    history.forEach(h => {
+        text += `${h.a} + ${h.b} = ${h.correctOnes} | Eingabe: ${h.userInput} | ${h.time} ms\n`;
+    });
+    historyEl.textContent = text;
+
+    drawChart();
+}
+
+function drawChart() {
+    chartEl.innerHTML = "";
+    const max = Math.max(...reactionTimes, 300);
+
+    reactionTimes.forEach((t, i) => {
+        const bar = document.createElement("div");
+        bar.classList.add("bar");
+        if (!history[i].isCorrect) bar.classList.add("wrong");
+        bar.style.height = (t / max * 100) + "%";
+        chartEl.appendChild(bar);
+    });
+}
+
+function tick() {
+    if (!running) return;
+
+    totalSeconds--;
+    let m = Math.floor(totalSeconds / 60);
+    let s = totalSeconds % 60;
+    timerEl.textContent = `${m}:${s.toString().padStart(2, "0")}`;
+
+    if (totalSeconds <= 0) {
+        endGame("Zeit ist abgelaufen");
+    }
+}
+
+setInterval(tick, 1000);
+
+function refocus() {
+    setTimeout(() => inputEl.focus(), 10);
+}
+
+inputEl.addEventListener("blur", refocus);
+
+escButton.addEventListener("click", () => {
+    if (running) endGame("Mit ESC abgebrochen");
+});
+
+document.addEventListener("keydown", function(e) {
+
+    if (running) {
+        if (e.key === "F12" ||
+            (e.ctrlKey && e.shiftKey && e.key === "I") ||
+            (e.ctrlKey && e.key === "U")) {
+            e.preventDefault();
+            return;
+        }
+    }
+
+    if (!running) return;
+
+    if (e.key === "Escape") {
+        endGame("Mit ESC abgebrochen");
+        return;
+    }
+
+    if (e.key >= "0" && e.key <= "9") {
+
+        let reaction = performance.now() - taskStartTime;
+        reactionTimes.push(reaction);
+
+        let userInput = parseInt(e.key);
+        let result = a + b;
+        let ones = result % 10;
+
+        let isCorrect = userInput === ones;
+
+        history.push({ a, b, userInput, correctOnes: ones, time: Math.round(reaction), isCorrect });
+
+        if (isCorrect) correct++;
+        else wrong++;
+
+        inputEl.value = "";
+        refocus();
+
+        a = b;
+        b = Math.floor(Math.random() * 10);
+        firstRound = false;
+
+        updateTask();
+    }
+});
+
+document.getElementById("impressumLink").onclick = () => {
+    document.getElementById("impressumBox").style.display = "block";
+};
+
+document.getElementById("startButton").onclick = () => {
+    document.getElementById("introOverlay").style.display = "none";
+    document.getElementById("container").style.display = "block";
+    running = true;
+    updateTask();
+    refocus();
+};
+</script>
+
+</body>
+</html>

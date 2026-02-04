@@ -1,0 +1,17 @@
+<!-- PWA: Grundlegende Meta-Tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Speedtrainer">
+
+<!-- App-Icon für iOS -->
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<!-- Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Service Worker Registrierung -->
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js');
+}
+</script>
