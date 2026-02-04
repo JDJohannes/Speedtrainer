@@ -18,165 +18,160 @@
 
     <!-- Service Worker Registrierung -->
     <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js');
-    }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
     </script>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
             background: #111;
-            color: white;
+            color: #fff;
+            font-family: Arial, sans-serif;
             text-align: center;
-            padding-top: 40px;
+            margin: 0;
+            padding: 0;
+        }
+
+        #container {
+            margin-top: 80px;
+            display: none;
+        }
+
+        #task {
+            font-size: 80px;
+            margin-bottom: 40px;
+        }
+
+        #inputField {
+            font-size: 40px;
+            width: 120px;
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            color: transparent;
+            text-shadow: 0 0 0 #fff;
+        }
+
+        #timer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            color: #0f0;
+        }
+
+        #resultScreen {
+            display: none;
+            margin-top: 40px;
+            font-size: 22px;
+        }
+
+        #history {
+            margin-top: 20px;
+            text-align: left;
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 20px;
+            white-space: pre-wrap;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 22px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #impressumLink {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            color: #888;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #impressumBox {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #222;
+            padding: 20px;
+            border-top: 2px solid #555;
+            text-align: left;
+            font-size: 18px;
+        }
+
+        /* INTRO POPUP – iPHONE FIX */
+        #introOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #introBox {
+            background: #222;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90vw;
+            max-width: 600px;
+            max-height: 80vh;     /* WICHTIG */
+            overflow-y: auto;     /* WICHTIG */
+            text-align: center;
+            font-size: 22px;
+            line-height: 1.5;
+        }
+
+        .rechnung {
+            font-size: 32px;
+            margin: 10px 0;
+            color: #0af;
+            font-weight: bold;
+        }
+
+        .highlight {
+            color: #ff0;
+            font-weight: bold;
+        }
+
+        /* Balkendiagramm */
+        #chart {
+            width: 80%;
+            height: 300px;
+            margin: 40px auto;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            border-left: 2px solid #888;
+            border-bottom: 2px solid #888;
+            padding: 10px;
+        }
+
+        .bar {
+            width: 20px;
+            background: #0f0;
+        }
+
+        .bar.wrong {
+            background: #f00;
         }
     </style>
 </head>
 
-<body>
-    <h1>Speedtrainer</h1>
-    <p>Wenn du das hier siehst, funktioniert deine index.html!</p>
-
-    <!-- HIER kommt später dein Speedtrainer-Code rein -->
-    <!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<title>Speedtrainer</title>
-<style>
-    body {
-        background: #111;
-        color: #fff;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        margin: 0;
-        padding: 0;
-    }
-    #container {
-        margin-top: 80px;
-        display: none;
-    }
-    #task {
-        font-size: 80px;
-        margin-bottom: 40px;
-    }
-    #inputField {
-        font-size: 40px;
-        width: 120px;
-        text-align: center;
-        padding: 10px;
-        border-radius: 10px;
-        border: none;
-        color: transparent;
-        text-shadow: 0 0 0 #fff;
-    }
-    #timer {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        font-size: 30px;
-        color: #0f0;
-    }
-    #resultScreen {
-        display: none;
-        margin-top: 40px;
-        font-size: 22px;
-    }
-    #history {
-        margin-top: 20px;
-        text-align: left;
-        width: 60%;
-        margin-left: auto;
-        margin-right: auto;
-        font-size: 20px;
-        white-space: pre-wrap;
-    }
-    button {
-        margin-top: 20px;
-        padding: 15px 30px;
-        font-size: 22px;
-        border-radius: 10px;
-        border: none;
-        cursor: pointer;
-    }
-
-    #impressumLink {
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        color: #888;
-        cursor: pointer;
-        font-size: 16px;
-    }
-    #impressumBox {
-        display: none;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background: #222;
-        padding: 20px;
-        border-top: 2px solid #555;
-        text-align: left;
-        font-size: 18px;
-    }
-
-    /* Intro Overlay */
-    #introOverlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.85);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-    }
-    #introBox {
-        background: #222;
-        padding: 30px;
-        border-radius: 15px;
-        width: 60%;
-        max-width: 650px;
-        text-align: center;
-        font-size: 22px;
-        line-height: 1.5;
-    }
-    .rechnung {
-        font-size: 32px;
-        margin: 10px 0;
-        color: #0af;
-        font-weight: bold;
-    }
-    .highlight {
-        color: #ff0;
-        font-weight: bold;
-    }
-
-    /* Balkendiagramm */
-    #chart {
-        width: 80%;
-        height: 300px;
-        margin: 40px auto;
-        display: flex;
-        align-items: flex-end;
-        gap: 4px;
-        border-left: 2px solid #888;
-        border-bottom: 2px solid #888;
-        padding: 10px;
-    }
-    .bar {
-        width: 20px;
-        background: #0f0;
-    }
-    .bar.wrong {
-        background: #f00;
-    }
-</style>
-</head>
 <body oncontextmenu="return false">
 
 <!-- INTRO / ANLEITUNG -->
@@ -382,7 +377,3 @@ document.getElementById("startButton").onclick = () => {
 
 </body>
 </html>
-    <!-- Hier endet der SPeedtrainer Code -->
-</body>
-</html>
-
